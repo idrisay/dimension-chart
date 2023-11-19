@@ -16,131 +16,120 @@ const generateChartData = (numberOfDatasets, dataChartValues) => {
   const datasets = Array.from({ length: numberOfDatasets }, (v, i) => ({
     label: `Dataset ${i + 1}`,
     data: dataChartValues[i],
-    fill: true,
   }));
 
   const labels = datasets.map((dataset) => dataset.label);
 
   return { labels, datasets };
 };
-
 // Function to create the table
 function createTable() {
-  let table = document.createElement("table");
-
-  table.classList.add("w-full");
-  table.classList.add("mx-auto");
-
-  // Create the header row
-  let headerRow = table.insertRow();
-  let firstHeaderCell = document.createElement("th");
-  firstHeaderCell.textContent = "Questions";
-  headerRow.appendChild(firstHeaderCell);
-
-  // Add headers for datasets
-  for (let i = 0; i < numberOfDatasets; i++) {
-    let headerCell = document.createElement("th");
-    headerCell.textContent = `Dataset ${i + 1}`;
-    headerCell.classList.add("p-2");
-    headerRow.appendChild(headerCell);
-  }
-
-  // Create rows for each question
-  dimensionQuestions.forEach((question, index) => {
-    let row = table.insertRow();
-
-    let questionCell = row.insertCell();
-    questionCell.textContent = question;
-    questionCell.classList.add("py-2");
-    let newDataChartRow = new Array(numberOfDatasets).fill(null);
-    dataChartValues = [...dataChartValues, newDataChartRow];
-
-    // Add input cells for each dataset
+    let table = document.createElement("table");
+    table.classList.add("w-full", "mx-auto");
+  
+    // Create the header row
+    let headerRow = table.insertRow();
+    addHeaderCell(headerRow, "Questions");
+  
+    // Add headers for datasets
     for (let i = 0; i < numberOfDatasets; i++) {
-      let inputCell = row.insertCell();
-      inputCell.classList.add("text-center");
-      let input = document.createElement("input");
-      input.classList.add("w-16");
-      input.classList.add("text-center");
-      input.classList.add("border");
-      input.addEventListener("input", (e) => handleInputChange(e, index, i));
-      input.type = "number";
-      input.value = dataChartValues[index][i];
-      input.name = `input-${question}-${i}`;
-      inputCell.appendChild(input);
+      addHeaderCell(headerRow, `Dataset ${i + 1}`, ["p-2"]);
     }
-  });
-
-  // Append the table to the container
-  document.getElementById("table-container").appendChild(table);
-}
-
-const handleInputChange = (event, questionIndex, dataSetIndex) => {
-  dataChartValues[questionIndex][dataSetIndex] = event.target.value;
-
-  myChart.update();
-};
-
+  
+    // Create rows for each question
+    dimensionQuestions.forEach((question, index) => {
+      let row = table.insertRow();
+      addQuestionCell(row, question);
+  
+      // Initialize row in dataChartValues
+      if (!dataChartValues[index]) {
+        dataChartValues[index] = new Array(numberOfDatasets).fill(null);
+      }
+  
+      // Add input cells for each dataset
+      for (let i = 0; i < numberOfDatasets; i++) {
+        addInputCell(row, question, index, i);
+      }
+    });
+  
+    // Append the table to the container
+    document.getElementById("table-container").appendChild(table);
+  }
+  
+  const handleInputChange = (event, questionIndex, dataSetIndex) => {
+    // Ensure the row array exists
+    if (!dataChartValues[questionIndex]) {
+      dataChartValues[questionIndex] = new Array(numberOfDatasets).fill(null);
+    }
+  
+    dataChartValues[questionIndex][dataSetIndex] = event.target.value;
+  
+    myChart.update();
+  };
+  
+  // Helper functions for creating table cells
+  function addHeaderCell(row, text, classes = []) {
+    const headerCell = document.createElement("th");
+    headerCell.textContent = text;
+    headerCell.classList.add(...classes);
+    row.appendChild(headerCell);
+  }
+  
+  function addQuestionCell(row, text) {
+    const cell = row.insertCell();
+    cell.textContent = text;
+    cell.classList.add("py-2");
+  }
+  
+  function addInputCell(row, question, rowIndex, datasetIndex) {
+    const inputCell = row.insertCell();
+    inputCell.classList.add("text-center");
+  
+    const input = document.createElement("input");
+    input.type = "number";
+    input.value = dataChartValues[rowIndex][datasetIndex];
+    input.name = `input-${question}-${datasetIndex}`;
+    input.classList.add("w-16", "text-center", "border");
+    input.addEventListener("input", (e) => handleInputChange(e, rowIndex, datasetIndex));
+  
+    inputCell.appendChild(input);
+  }
+  
 // Call the function to create the table
 createTable();
 
-const ctx = document.getElementById("radial-chart").getContext("2d");
+let myChart = null;
+const chartContext = document.getElementById("radial-chart").getContext("2d");
 
-const data = generateChartData(numberOfDatasets, dataChartValues);
-
-document.querySelector("#chart-type").onchange = function (e) {
+document.querySelector("#chart-type").onchange = (e) => {
   chartType = e.target.value;
-
-  // Destroy the old chart and create a new one with the new type
-  if (myChart) {
-    myChart.destroy();
-  }
-  myChart = initializeChart(
-    chartType,
-    generateChartData(numberOfDatasets, dataChartValues)
-  );
+  updateChart();
 };
 
-// Create a function to initialize the chart
-function initializeChart(type, _data) {
-  const ctx = document.getElementById("radial-chart").getContext("2d");
+document.querySelector("#number-of-datasets").onchange = (e) => {
+  numberOfDatasets = +e.target.value;
+  clearTableContainer();
+  createTable();
+  updateChart();
+};
 
-  const config = {
-    type: type,
-    data: _data,
+function initializeChart(chartType, chartData) {
+  const chartConfig = {
+    type: chartType,
+    data: chartData,
     options: {
       scales: {
         r: {
           beginAtZero: true,
-          min: 0,
-          max: 100,
-          ticks: {
-            stepSize: 20,
-          },
-        },
-      },
-      elements: {
-        line: {
-          borderWidth: 3,
         },
       },
     },
   };
 
-  return new Chart(ctx, config);
+  return new Chart(chartContext, chartConfig);
 }
 
-// Initialize the chart with the default type
-let myChart = initializeChart(
-  chartType,
-  generateChartData(numberOfDatasets, dataChartValues)
-);
-
-document.querySelector("#number-of-datasets").onchange = function (e) {
-  numberOfDatasets = e.target.value;
-  document.querySelector("#table-container").innerHTML = "";
-  createTable();
-
+function updateChart() {
   if (myChart) {
     myChart.destroy();
   }
@@ -148,4 +137,12 @@ document.querySelector("#number-of-datasets").onchange = function (e) {
     chartType,
     generateChartData(numberOfDatasets, dataChartValues)
   );
-};
+}
+
+function clearTableContainer() {
+  const container = document.querySelector("#table-container");
+  container.innerHTML = "";
+}
+
+// Initialize the chart with the default type
+updateChart();
