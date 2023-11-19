@@ -3,25 +3,36 @@
   <head>
     <title>Radial Axes Chart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="h-screen">
-    <div class="flex justify-center h-full">
-      <div class="w-11/12 max-w-5xl flex flex-col gap-2 h-full">
-        <div class="flex justify-center gap-4">
-          <div id="dimension-questions">
-            <h2>Questions</h2>
+  <body>
+    <div class="flex items-center w-full">
+      <div class="w-5/12">
+        <div class="flex gap-8">
+          <div>
+            <label for="chart-type">Chart type</label>
+            <select name="chart-type" class="border px-2 py-1 border-black rounded" id="chart-type">
+              <option value="radar">Radar</option>
+              <option value="bar">Bar</option>
+              <option value="line">Line</option>
+            </select>
           </div>
-          <div
-            class="flex items-center justify-center gap-2"
-            id="dimension-inputs"
-          ></div>
+          <div>
+            <label for="number-of-datasets">Number of datasets</label>
+            <select name="number-of-datasets" class="border px-2 py-1 border-black rounded" id="number-of-datasets">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
         </div>
-        <div class="flex w-full justify-center items-center">
-          <div class="w-[500px]">
-            <canvas id="radial-chart" class=""></canvas>
-          </div>
+        <div id="table-container" class="w-full"></div>
+      </div>
+      <div class="w-6/12 py-2">
+        <div class="">
+          <canvas id="radial-chart" class=""></canvas>
         </div>
       </div>
     </div>

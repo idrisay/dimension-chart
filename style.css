@@ -1,6 +1,6 @@
-.chart-wrapper{
-
-    max-height: 80vh;
-    display: flex;
-    justify-content: center;
+table td, th{
+    padding: 10px;
+}
+table{
+    margin: auto;
 }

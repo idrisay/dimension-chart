@@ -1,88 +1,89 @@
 let numberOfDatasets = 4;
-let dataOfChartSets = [];
 let dimensionQuestions = [
-    'Question 1',
-    'Question 2',
-    'Question 3',
-    'Question 4',
-    'Question 5',
-    'Question 6',
-    'Question 7',
-    'Question 8',
+  "Question 1",
+  "Question 2",
+  "Question 3",
+  "Question 4",
+  "Question 5",
+  "Question 6",
+  "Question 7",
+  "Question 8",
 ];
+let dataChartValues = [];
+let chartType = "radar";
 
-dimensionQuestions.forEach((elem, index) => {
-    let questionText = document.createElement('h2')
-    questionText.innerHTML = elem
-    questionText.classList.add('py-1')
-    document.querySelector('#dimension-questions').appendChild(questionText)
-})
+// Function to create the table
+function createTable() {
+  let table = document.createElement("table");
 
-new Array(numberOfDatasets).fill(0).forEach((element, index) => {
-  let newData = new Array(dimensionQuestions?.length).fill(0);
+  table.classList.add('w-full')
+  table.classList.add('mx-auto')
 
-  dataOfChartSets[index] = newData;
-});
+  // Create the header row
+  let headerRow = table.insertRow();
+  let firstHeaderCell = document.createElement("th");
+  firstHeaderCell.textContent = "Questions";
+  headerRow.appendChild(firstHeaderCell);
 
-dataOfChartSets.forEach((element, index) => {
-  let newDatasetDiv = document.createElement("div");
-  newDatasetDiv.classList.add("dataset");
-  let dataTitle = document.createElement("h2");
-  
-  dataTitle.innerHTML = `${index + 1}. Dataset`;
-  newDatasetDiv.appendChild(dataTitle);
+  // Add headers for datasets
+  for (let i = 0; i < numberOfDatasets; i++) {
+    let headerCell = document.createElement("th");
+    headerCell.textContent = `Dataset ${i + 1}`;
+    headerCell.classList.add('p-2')
+    headerRow.appendChild(headerCell);
+  }
 
-  console.log(element);
-  element.forEach((subElement, subIndex) => {
-    let dimensionDiv = document.createElement("div");
-    dimensionDiv.classList.add("dimension");
-    let dimensionLabel = document.createElement("label")
-    // let dimensionSpan = document.createElement("span")
-    // dimensionSpan.innerHTML = `${subIndex + 1}. dimension`
-    // dimensionLabel.appendChild(dimensionSpan);
-    
-    let dimensionInput = document.createElement("input")
-    dimensionInput.classList.add("border");
-    dimensionInput.classList.add("w-20");
-    dimensionLabel.appendChild(dimensionInput);
+  // Create rows for each question
+  dimensionQuestions.forEach((question, index) => {
+    let row = table.insertRow();
+   
+    let questionCell = row.insertCell();
+    questionCell.textContent = question;
+    questionCell.classList.add('py-2')
+    let newDataChartRow = new Array(numberOfDatasets).fill(null);
+    dataChartValues = [...dataChartValues, newDataChartRow];
 
-
-    dimensionDiv.appendChild(dimensionLabel);
-    
-    // let text = document.createTextNode(`${subIndex + 1}. dimension`);
-    newDatasetDiv.appendChild(dimensionDiv);
+    // Add input cells for each dataset
+    for (let i = 0; i < numberOfDatasets; i++) {
+      let inputCell = row.insertCell();
+      inputCell.classList.add('text-center')
+      let input = document.createElement("input");
+      input.classList.add("w-16");
+      input.classList.add("text-center");
+      input.classList.add("border");
+      input.addEventListener("input", (e) => handleInputChange(e, index, i));
+      input.type = "number";
+      input.value = dataChartValues[index][i];
+      input.name = `input-${question}-${i}`;
+      inputCell.appendChild(input);
+    }
   });
-  document.querySelector("#dimension-inputs").appendChild(newDatasetDiv);
 
-  //     let div = document.createElement('div');
-  // div.classList.add('test');
-  // let text = document.createTextNode('Test');
-  // div.appendChild(text);
-  // document.body.appendChild(div)
-});
+  // Append the table to the container
+  document.getElementById("table-container").appendChild(table);
+}
 
-///////////
+const handleInputChange = (event, questionIndex, dataSetIndex) => {
+  console.log("questionIndex: ", questionIndex);
+  console.log("dataSetIndex: ", dataSetIndex);
+  console.log("handleInputChange", event.target.value);
 
-let dataOfChart = [
-  [10, 50, 70, 60, 0], // Dataset 1
-  [30, 40, 60, 70, 50], // Dataset 2
-  [50, 60, 80, 90, 100], // Dataset 3
-];
+  dataChartValues[questionIndex][dataSetIndex] = event.target.value;
+
+  myChart.update();
+};
+
+// Call the function to create the table
+createTable();
 
 const ctx = document.getElementById("radial-chart").getContext("2d");
 
 const data = {
-  labels: [
-    "1. Dimension",
-    "2. Dimension",
-    "3. Dimension",
-    "4. Dimension",
-    "5. Dimension",
-  ],
+  labels: ["Dataset 1", "Dataset 2", "Dataset 3", "Dataset 4"],
   datasets: [
     {
       label: "Dataset 1",
-      data: dataOfChart[0],
+      data: dataChartValues[0],
       fill: true,
       backgroundColor: "rgba(255, 99, 132, 0.2)", // Color for Dataset 1
       borderColor: "rgb(255, 99, 132)",
@@ -93,7 +94,7 @@ const data = {
     },
     {
       label: "Dataset 2",
-      data: dataOfChart[1],
+      data: dataChartValues[1],
       fill: true,
       backgroundColor: "rgba(54, 162, 235, 0.2)", // Color for Dataset 2
       borderColor: "rgb(54, 162, 235)",
@@ -104,7 +105,18 @@ const data = {
     },
     {
       label: "Dataset 3",
-      data: dataOfChart[2],
+      data: dataChartValues[2],
+      fill: true,
+      backgroundColor: "rgba(75, 192, 192, 0.2)", // Color for Dataset 3
+      borderColor: "rgb(75, 192, 192)",
+      pointBackgroundColor: "rgb(75, 192, 192)",
+      pointBorderColor: "#fff",
+      pointHoverBackgroundColor: "#fff",
+      pointHoverBorderColor: "rgb(75, 192, 192)",
+    },
+    {
+      label: "Dataset 4",
+      data: dataChartValues[3],
       fill: true,
       backgroundColor: "rgba(75, 192, 192, 0.2)", // Color for Dataset 3
       borderColor: "rgb(75, 192, 192)",
@@ -116,48 +128,81 @@ const data = {
   ],
 };
 
-const config = {
-  type: "radar",
-  data: data,
-  options: {
-    scales: {
-      r: {
-        beginAtZero: true,
-        min: 0,
-        max: 100,
-        ticks: {
-          stepSize: 20,
+// const config = {
+//   // type: "radar",
+//   // type: "bar",
+//   // type: "line",
+//   type: chartType,
+//   data: data,
+//   options: {
+//     scales: {
+//       r: {
+//         beginAtZero: true,
+//         min: 0,
+//         max: 100,
+//         ticks: {
+//           stepSize: 20,
+//         },
+//       },
+//     },
+//     elements: {
+//       line: {
+//         borderWidth: 3,
+//       },
+//     },
+//   },
+// };
+
+// const myChart = new Chart(ctx, config);
+
+document.querySelector("#chart-type").onchange = function (e) {
+  console.log("onc", e.target.value);
+  chartType = e.target.value;
+
+  // Destroy the old chart and create a new one with the new type
+  if (myChart) {
+    myChart.destroy();
+  }
+  myChart = initializeChart(chartType);
+};
+
+// Create a function to initialize the chart
+function initializeChart(type) {
+  const ctx = document.getElementById("radial-chart").getContext("2d");
+
+  const config = {
+    type: type,
+    data: data,
+    options: {
+      scales: {
+        r: {
+          beginAtZero: true,
+          min: 0,
+          max: 100,
+          ticks: {
+            stepSize: 20,
+          },
+        },
+      },
+      elements: {
+        line: {
+          borderWidth: 3,
         },
       },
     },
-    elements: {
-      line: {
-        borderWidth: 3,
-      },
-    },
-  },
+  };
+
+  return new Chart(ctx, config);
+}
+
+// Initialize the chart with the default type
+let myChart = initializeChart(chartType);
+
+document.querySelector("#number-of-datasets").onchange = function (e) {
+  console.log("onc", e.target.value);
+  numberOfDatasets = e.target.value;
+
+  console.log(numberOfDatasets);
+  document.querySelector('#table-container').innerHTML = ''
+  createTable()
 };
-
-const handleChangeInput = (event, datasetIndex, valueIndex) => {
-  let inputValue = parseInt(event.target.value);
-  if (inputValue >= 0 && inputValue <= 100) {
-    dataOfChart[datasetIndex][valueIndex] = inputValue;
-    myChart.data.datasets[datasetIndex].data = dataOfChart[datasetIndex];
-    myChart.update();
-  } else {
-    console.warn("Input value must be between 0 and 100");
-  }
-};
-
-let dimensionInputs = document.querySelectorAll("#dimension-inputs input");
-
-dimensionInputs.forEach((element, index) => {
-  // Assuming each input element has attributes data-dataset-index and data-value-index
-  let datasetIndex = parseInt(element.getAttribute("data-dataset-index"));
-  let valueIndex = parseInt(element.getAttribute("data-value-index"));
-  element.addEventListener("input", (event) =>
-    handleChangeInput(event, datasetIndex, valueIndex)
-  );
-});
-
-const myChart = new Chart(ctx, config);
