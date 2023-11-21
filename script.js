@@ -1,13 +1,14 @@
 let numberOfDatasets = 4;
 let dimensionQuestions = [
-  "Question 1",
-  "Question 2",
-  "Question 3",
-  "Question 4",
-  "Question 5",
-  "Question 6",
-  "Question 7",
-  "Question 8",
+  "ddis",
+  "dyn",
+  "security",
+  "input",
+  "active",
+  "cookie",
+  "role",
+  "rights",
+  "infra"
 ];
 let dataChartValues = [];
 let chartType = "radar";
