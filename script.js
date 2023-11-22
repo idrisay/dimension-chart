@@ -1,132 +1,24 @@
-let numberOfDatasets = 4;
-let dimensionQuestions = [
-  "ddis",
-  "dyn",
-  "security",
-  "input",
-  "active",
-  "cookie",
-  "role",
-  "rights",
-  "infra"
-];
-let dataChartValues = [];
+const chartContext = document.getElementById("radial-chart").getContext("2d");
+let myChart = null;
 let chartType = "radar";
 
-const generateChartData = () => {
-    const dimensionChartData = dimensionQuestions.map((dimension, index) => ({
-        label: dimension,
-        data: dataChartValues[index],
-    }));
-    console.log('dimensionChartData--->',dimensionChartData)
+const questions = ["ddis", "dyn", "security", "input", "active", "cookie", "role", "rights", "infra"];
 
-  const labels = dimensionChartData.map((dataset) => dataset.label);
+function createDataSetLabels(count) {
+  return Array.from({ length: count }, (_, i) => `DataSet ${i + 1}`);
+}
 
-  return { labels, datasets: dimensionChartData };
-};
-// Function to create the table
-function createTable() {
-  let table = document.createElement("table");
-  table.classList.add("w-full", "mx-auto");
-
-  // Create the header row
-  let headerRow = table.insertRow();
-  addHeaderCell(headerRow, "Questions");
-
-  // Add headers for datasets
-  for (let i = 0; i < numberOfDatasets; i++) {
-    addHeaderCell(headerRow, `Dataset ${i + 1}`, ["p-2"]);
+function initializeChart(chartType, questions, dataSets) {
+  if (myChart) {
+    myChart.destroy();
   }
 
-  // Create rows for each question
-  dimensionQuestions.forEach((question, index) => {
-    let row = table.insertRow();
-    addQuestionCell(row, question);
-
-    // Initialize row in dataChartValues
-    if (!dataChartValues[index]) {
-      dataChartValues[index] = new Array(numberOfDatasets).fill(null);
-    }
-
-    // Add input cells for each dataset
-    for (let i = 0; i < numberOfDatasets; i++) {
-      addInputCell(row, question, index, i);
-    }
-  });
-
-  // Append the table to the container
-  document.getElementById("table-container").appendChild(table);
-}
-
-const handleInputChange = (event, questionIndex, dataSetIndex) => {
-//   console.log(questionIndex, dataSetIndex);
-  // Ensure the row array exists
-  if (!dataChartValues[questionIndex]) {
-    dataChartValues[dataSetIndex] = new Array(dimensionQuestions.length).fill(
-      null
-    );
-  }
-
-  dataChartValues[dataSetIndex][questionIndex] = event.target.value;
-
-//   console.log(dataChartValues);
-  updateChart();
-
-  //   myChart.update();
-};
-
-// Helper functions for creating table cells
-function addHeaderCell(row, text, classes = []) {
-  const headerCell = document.createElement("th");
-  headerCell.textContent = text;
-  headerCell.classList.add(...classes);
-  row.appendChild(headerCell);
-}
-
-function addQuestionCell(row, text) {
-  const cell = row.insertCell();
-  cell.textContent = text;
-  cell.classList.add("py-2");
-}
-
-function addInputCell(row, question, rowIndex, datasetIndex) {
-    
-  const inputCell = row.insertCell();
-  inputCell.classList.add("text-center");
-  const input = document.createElement("input");
-  input.type = "number";
-  input.value = dataChartValues[rowIndex][datasetIndex];
-  input.name = `input-${question}-${datasetIndex}`;
-  input.classList.add("w-16", "text-center", "border");
-  input.addEventListener("input", (e) =>
-    handleInputChange(e, rowIndex, datasetIndex)
-  );
-
-  inputCell.appendChild(input);
-}
-
-// Call the function to create the table
-createTable();
-
-let myChart = null;
-const chartContext = document.getElementById("radial-chart").getContext("2d");
-
-document.querySelector("#chart-type").onchange = (e) => {
-  chartType = e.target.value;
-  updateChart();
-};
-
-document.querySelector("#number-of-datasets").onchange = (e) => {
-  numberOfDatasets = +e.target.value;
-  clearTableContainer();
-  createTable();
-  updateChart();
-};
-
-function initializeChart(chartType, chartData) {
-  const chartConfig = {
+  myChart = new Chart(chartContext, {
     type: chartType,
-    data: chartData,
+    data: {
+      labels: questions,
+      datasets: dataSets,
+    },
     options: {
       scales: {
         r: {
@@ -134,23 +26,115 @@ function initializeChart(chartType, chartData) {
         },
       },
     },
-  };
-
-  return new Chart(chartContext, chartConfig);
+  });
 }
 
-function updateChart() {
-  if (myChart) {
-    myChart.destroy();
-  }
-  console.log('GEN DATA -> ',generateChartData());
-  myChart = initializeChart(chartType, generateChartData());
+function generateDatasets(labels, questions) {
+  return labels.map((label) => ({
+    label: label,
+    data: new Array(questions.length).fill(0),
+    fill: true,
+    // borderColor: `rgb(${randomColorValue()}, ${randomColorValue()}, ${randomColorValue()})`,
+    // backgroundColor: `rgba(${randomColorValue()}, ${randomColorValue()}, ${randomColorValue()}, 0.5)`,
+  }));
 }
 
-function clearTableContainer() {
-  const container = document.querySelector("#table-container");
+function createTable(containerId, dataSetLabels, questions, dataSets) {
+  const container = document.getElementById(containerId);
   container.innerHTML = "";
+
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const tbody = document.createElement("tbody");
+
+  const headerRow = document.createElement("tr");
+  headerRow.appendChild(createCell("th", "Questions"));
+  dataSetLabels.forEach((label) => headerRow.appendChild(createCell("th", label)));
+  thead.appendChild(headerRow);
+
+  questions.forEach((question, qIndex) => {
+    const row = document.createElement("tr");
+    row.appendChild(createCell("td", question));
+
+    dataSets.forEach((dataSet, dsIndex) => {
+      const cell = createCell("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.classList.add("w-16", "text-center", "border");
+      input.value = dataSet.data[qIndex];
+      input.addEventListener("input", (e) => {
+        dataSet.data[qIndex] = Number(e.target.value);
+        initializeChart(chartType, questions, dataSets);
+        localStorage.setItem('chart_data', JSON.stringify(dataSets));
+      });
+      cell.appendChild(input);
+      row.appendChild(cell);
+    });
+
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  container.appendChild(table);
 }
 
-// Initialize the chart with the default type
-updateChart();
+function createCell(type, text = "") {
+  const cell = document.createElement(type);
+  cell.textContent = text;
+  return cell;
+}
+
+function randomColorValue() {
+  return Math.floor(Math.random() * 256);
+}
+
+let countDatasetLabel = 4;
+if (localStorage.getItem("chart_number-of-datasets")) {
+  countDatasetLabel = Number(localStorage.getItem("chart_number-of-datasets"));
+  document.querySelector("#number-of-datasets").value = countDatasetLabel;
+}
+
+let dataSetLabels = createDataSetLabels(countDatasetLabel);
+let dataSets = [];
+
+if (localStorage.getItem('chart_data')) {
+  dataSets = JSON.parse(localStorage.getItem('chart_data'));
+  dataSets = dataSets.slice(0, countDatasetLabel);
+  while (dataSets.length < countDatasetLabel) {
+    dataSets.push(generateDatasets([`DataSet ${dataSets.length + 1}`], questions)[0]);
+  }
+} else {
+  dataSets = generateDatasets(dataSetLabels, questions);
+  localStorage.setItem('chart_data', JSON.stringify(dataSets));
+}
+
+if (localStorage.getItem("chart_type")) {
+  chartType = localStorage.getItem("chart_type");
+  document.querySelector("#chart-type").value = chartType;
+}
+initializeChart(chartType, questions, dataSets);
+createTable("table-container", dataSetLabels, questions, dataSets);
+
+document.getElementById("chart-type").addEventListener("change", (e) => {
+  chartType = e.target.value;
+  initializeChart(chartType, questions, dataSets);
+  localStorage.setItem("chart_type", chartType);
+});
+
+document.getElementById("number-of-datasets").addEventListener("change", (e) => {
+  const newLabelCount = Number(e.target.value);
+  console.log(newLabelCount);
+
+  const newDataSetLabels = createDataSetLabels(newLabelCount);
+  let newDataSets = JSON.parse(localStorage.getItem('chart_data')) || [];
+  newDataSets = newDataSets.slice(0, newLabelCount);
+  while (newDataSets.length < newLabelCount) {
+    newDataSets.push(generateDatasets([`DataSet ${newDataSets.length + 1}`], questions)[0]);
+  }
+
+  createTable("table-container", newDataSetLabels, questions, newDataSets);
+  initializeChart(chartType, questions, newDataSets);
+  localStorage.setItem("chart_number-of-datasets", newLabelCount);
+  localStorage.setItem('chart_data', JSON.stringify(newDataSets));
+});
