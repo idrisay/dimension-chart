@@ -8,7 +8,7 @@
 <body>
   <div class="flex items-center w-full h-screen">
     <div class="w-5/12">
-      <div class="flex gap-8">
+      <div class="flex gap-8 items-center">
         <div>
           <label for="chart-type">Chart type</label>
           <select id="chart-type" class="border px-2 py-1 border-black rounded">
@@ -26,6 +26,9 @@
             <option selected value="4">4</option>
             <option value="5">5</option>
           </select>
+        </div>
+        <div id="delete" class="cursor-pointer">
+          <p>Reset data</p>
         </div>
       </div>
       <div id="table-container" class="w-full"></div>

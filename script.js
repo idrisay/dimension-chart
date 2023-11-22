@@ -2,7 +2,17 @@ const chartContext = document.getElementById("radial-chart").getContext("2d");
 let myChart = null;
 let chartType = "radar";
 
-const questions = ["ddis", "dyn", "security", "input", "active", "cookie", "role", "rights", "infra"];
+const questions = [
+  "ddis",
+  "dyn",
+  "security",
+  "input",
+  "active",
+  "cookie",
+  "role",
+  "rights",
+  "infra",
+];
 
 function createDataSetLabels(count) {
   return Array.from({ length: count }, (_, i) => `DataSet ${i + 1}`);
@@ -49,7 +59,9 @@ function createTable(containerId, dataSetLabels, questions, dataSets) {
 
   const headerRow = document.createElement("tr");
   headerRow.appendChild(createCell("th", "Questions"));
-  dataSetLabels.forEach((label) => headerRow.appendChild(createCell("th", label)));
+  dataSetLabels.forEach((label) =>
+    headerRow.appendChild(createCell("th", label))
+  );
   thead.appendChild(headerRow);
 
   questions.forEach((question, qIndex) => {
@@ -65,7 +77,7 @@ function createTable(containerId, dataSetLabels, questions, dataSets) {
       input.addEventListener("input", (e) => {
         dataSet.data[qIndex] = Number(e.target.value);
         initializeChart(chartType, questions, dataSets);
-        localStorage.setItem('chart_data', JSON.stringify(dataSets));
+        localStorage.setItem("chart_data", JSON.stringify(dataSets));
       });
       cell.appendChild(input);
       row.appendChild(cell);
@@ -98,15 +110,17 @@ if (localStorage.getItem("chart_number-of-datasets")) {
 let dataSetLabels = createDataSetLabels(countDatasetLabel);
 let dataSets = [];
 
-if (localStorage.getItem('chart_data')) {
-  dataSets = JSON.parse(localStorage.getItem('chart_data'));
+if (localStorage.getItem("chart_data")) {
+  dataSets = JSON.parse(localStorage.getItem("chart_data"));
   dataSets = dataSets.slice(0, countDatasetLabel);
   while (dataSets.length < countDatasetLabel) {
-    dataSets.push(generateDatasets([`DataSet ${dataSets.length + 1}`], questions)[0]);
+    dataSets.push(
+      generateDatasets([`DataSet ${dataSets.length + 1}`], questions)[0]
+    );
   }
 } else {
   dataSets = generateDatasets(dataSetLabels, questions);
-  localStorage.setItem('chart_data', JSON.stringify(dataSets));
+  localStorage.setItem("chart_data", JSON.stringify(dataSets));
 }
 
 if (localStorage.getItem("chart_type")) {
@@ -122,19 +136,30 @@ document.getElementById("chart-type").addEventListener("change", (e) => {
   localStorage.setItem("chart_type", chartType);
 });
 
-document.getElementById("number-of-datasets").addEventListener("change", (e) => {
-  const newLabelCount = Number(e.target.value);
-  console.log(newLabelCount);
+document
+  .getElementById("number-of-datasets")
+  .addEventListener("change", (e) => {
+    const newLabelCount = Number(e.target.value);
+    console.log(newLabelCount);
 
-  const newDataSetLabels = createDataSetLabels(newLabelCount);
-  let newDataSets = JSON.parse(localStorage.getItem('chart_data')) || [];
-  newDataSets = newDataSets.slice(0, newLabelCount);
-  while (newDataSets.length < newLabelCount) {
-    newDataSets.push(generateDatasets([`DataSet ${newDataSets.length + 1}`], questions)[0]);
-  }
+    const newDataSetLabels = createDataSetLabels(newLabelCount);
+    let newDataSets = JSON.parse(localStorage.getItem("chart_data")) || [];
+    newDataSets = newDataSets.slice(0, newLabelCount);
+    while (newDataSets.length < newLabelCount) {
+      newDataSets.push(
+        generateDatasets([`DataSet ${newDataSets.length + 1}`], questions)[0]
+      );
+    }
 
-  createTable("table-container", newDataSetLabels, questions, newDataSets);
-  initializeChart(chartType, questions, newDataSets);
-  localStorage.setItem("chart_number-of-datasets", newLabelCount);
-  localStorage.setItem('chart_data', JSON.stringify(newDataSets));
-});
+    createTable("table-container", newDataSetLabels, questions, newDataSets);
+    initializeChart(chartType, questions, newDataSets);
+    localStorage.setItem("chart_number-of-datasets", newLabelCount);
+    localStorage.setItem("chart_data", JSON.stringify(newDataSets));
+  });
+
+document.querySelector("#delete").onclick = () => {
+  localStorage.removeItem("chart_number-of-datasets");
+  localStorage.removeItem("chart_data");
+  localStorage.removeItem("chart_type");
+  window.location.reload();
+};
