@@ -140,7 +140,6 @@ document
   .getElementById("number-of-datasets")
   .addEventListener("change", (e) => {
     const newLabelCount = Number(e.target.value);
-    console.log(newLabelCount);
 
     const newDataSetLabels = createDataSetLabels(newLabelCount);
     let newDataSets = JSON.parse(localStorage.getItem("chart_data")) || [];
